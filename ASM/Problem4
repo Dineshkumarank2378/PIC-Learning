@@ -1,0 +1,67 @@
+#include <xc.inc>
+
+;===========================================================
+; File      : indirect_portb.asm
+; MCU       : PIC16F877A
+; Purpose   : Configure and control PORTB using indirect addressing
+; Author    : Dinesh Kumaran K
+; Description:
+;   - Uses FSR and INDF registers for indirect memory access.
+;   - Sets PORTB as output.
+;   - Writes 0xFF to PORTB (all pins HIGH).
+;===========================================================
+
+;===========================================================
+; CONFIGURATION BITS
+;===========================================================
+CONFIG  FOSC = HS
+CONFIG  WDTE = OFF
+CONFIG  PWRTE = OFF
+CONFIG  BOREN = OFF
+CONFIG  LVP = OFF
+CONFIG  CPD = OFF
+CONFIG  WRT = OFF
+CONFIG  CP = OFF
+
+;===========================================================
+; RESET VECTOR
+;===========================================================
+psect RESET_VECT, class=CODE, delta=2
+RESET_VECT:
+    goto SETUP
+
+;===========================================================
+; INTERRUPT VECTOR (Not Used)
+;===========================================================
+psect INT_VECT, class=CODE, delta=2
+INT_VECT:
+    retfie
+
+;===========================================================
+; MAIN PROGRAM
+;===========================================================
+SETUP:
+    ; Select Bank 1 (TRIS registers are in Bank 1)
+    BCF STATUS, 6
+    BSF STATUS, 5
+
+    ; Point FSR to TRISB register
+    MOVLW TRISB
+    MOVWF FSR
+
+    ; Set TRISB = 0x00 (PORTB as output)
+    MOVLW 0x00
+    MOVWF INDF
+
+    ; Return to Bank 0 (PORT registers are in Bank 0)
+    BCF STATUS, 5
+
+    ; Point FSR to PORTB register
+    MOVLW PORTB
+    MOVWF FSR
+
+    ; Write 0xFF to PORTB (set all pins HIGH)
+    MOVLW 0xFF
+    MOVWF INDF
+
+END

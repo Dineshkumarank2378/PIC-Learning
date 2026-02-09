@@ -1,0 +1,115 @@
+; ============================================================
+; File: counter_lsb_display.asm
+; MCU : PIC16F877A
+; Description:
+;   This program initializes PORTB as output and loads a counter
+;   value (0x0A). In each loop iteration, it extracts the LSB of
+;   the counter and outputs it to PORTB. A software delay is used
+;   between updates. The counter decrements until it reaches zero,
+;   after which PORTB is cleared.
+; ============================================================
+
+#include <xc.inc>
+
+; =============================
+; RAM Variable Definitions
+; =============================
+X  EQU 0x20      ; Main counter register
+Y  EQU 0x21      ; (Unused) reserved variable
+Z  EQU 0x23      ; Delay outer loop counter
+Z1 EQU 0x24      ; Delay inner loop counter
+
+; =============================
+; CONFIGURATION BITS
+; =============================
+CONFIG  FOSC = HS
+CONFIG  WDTE = OFF
+CONFIG  PWRTE = OFF
+CONFIG  BOREN = OFF
+CONFIG  LVP = OFF
+CONFIG  CPD = OFF
+CONFIG  WRT = OFF
+CONFIG  CP = OFF
+
+; =============================
+; RESET VECTOR
+; =============================
+psect RESET_VECT, class=CODE, delta=2
+RESET_VECT:
+    goto SETUP
+
+; =============================
+; INTERRUPT VECTOR (NOT USED)
+; =============================
+psect INT_VECT, class=CODE, delta=2
+INT_VECT:
+    retfie
+
+; =============================
+; INITIALIZATION
+; =============================
+SETUP:
+    BCF STATUS,6        ; Select Bank 0
+    BCF STATUS,5
+
+    MOVLW 0x0A          ; Load initial counter value (10 decimal)
+    MOVWF X
+
+    BSF STATUS,5        ; Select Bank 1
+    BCF STATUS,6
+    MOVLW 0x00
+    MOVWF TRISB         ; PORTB as output
+
+    BCF STATUS,5        ; Back to Bank 0
+    goto LOOP1
+
+; =============================
+; MAIN LOOP LOGIC
+; =============================
+MAIN:
+    MOVLW 0x01
+    ANDWF X,0           ; Extract LSB of X (X & 0x01)
+    MOVWF PORTB         ; Output LSB to PORTB
+
+    CALL DELAY          ; Software delay
+
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+
+    GOTO LOOP1          ; Continue loop
+
+; =============================
+; SOFTWARE DELAY ROUTINE
+; =============================
+DELAY:
+    MOVLW 0xFF
+    MOVWF Z             ; Outer delay counter
+
+LP:
+    MOVLW 0xFF
+    MOVWF Z1            ; Inner delay counter
+
+LPP:
+    DECFSZ Z1
+    GOTO LPP
+
+    DECFSZ Z
+    GOTO LP
+
+    RETURN
+
+; =============================
+; COUNTER DECREMENT LOOP
+; =============================
+LOOP1:
+    DECFSZ X            ; Decrement X until zero
+    GOTO MAIN
+
+    MOVLW 0x00
+    MOVWF PORTB         ; Clear PORTB when X reaches zero
+
+    END

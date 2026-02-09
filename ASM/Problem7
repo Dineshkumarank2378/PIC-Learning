@@ -1,0 +1,74 @@
+#include <xc.inc>
+
+;===========================================================
+; File      : xor_port.asm
+; MCU       : PIC16F877A
+; Purpose   : Perform XOR operation on PORTB and output result to PORTD
+; Author    : Dinesh Kumaran K
+; Description:
+;   - PORTB configured as input.
+;   - PORTD configured as output.
+;   - Lower 4 bits of PORTB are inverted using XOR with 0x0F.
+;===========================================================
+
+COUNT   EQU 0x20
+COUNT2  EQU 0x21
+COUNT3  EQU 0x22   ; (unused)
+
+;===========================================================
+; CONFIGURATION BITS
+;===========================================================
+CONFIG  FOSC  = HS
+CONFIG  WDTE  = OFF
+CONFIG  PWRTE = OFF
+CONFIG  BOREN = OFF
+CONFIG  LVP   = OFF
+CONFIG  CPD   = OFF
+CONFIG  WRT   = OFF
+CONFIG  CP    = OFF
+
+;===========================================================
+; RESET VECTOR
+;===========================================================
+psect RESET_VECT, class=CODE, delta=2
+RESET_VECT:
+    goto setup
+
+;===========================================================
+; INTERRUPT VECTOR (Not Used)
+;===========================================================
+psect INT_VECT, class=CODE, delta=2
+INT_VECT:
+    retfie
+
+;===========================================================
+; INITIALIZATION
+;===========================================================
+setup:
+    ; Select Bank 1
+    BCF STATUS,6
+    BSF STATUS,5
+
+    MOVLW 0x06
+    MOVWF ADCON1        ; Disable analog on PORTA
+
+    MOVLW 0xFF
+    MOVWF TRISB         ; PORTB as input
+
+    MOVLW 0x00
+    MOVWF TRISD         ; PORTD as output
+
+    ; Return to Bank 0
+    BCF STATUS,6
+    BCF STATUS,5
+
+;===========================================================
+; MAIN LOOP
+;===========================================================
+main:
+    MOVLW 0x0F          ; Mask for lower 4 bits
+    XORWF PORTB,0       ; W = PORTB XOR 0x0F
+    MOVWF PORTD         ; Output result to PORTD
+    GOTO main           ; Repeat forever
+
+END

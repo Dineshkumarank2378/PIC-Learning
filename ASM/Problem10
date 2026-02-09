@@ -1,0 +1,148 @@
+#include <xc.inc>
+
+;===========================================================
+; File      : led_chaser.asm
+; MCU       : PIC16F877A
+; Purpose   : Bidirectional LED chaser on PORTB controlled by RC0
+; Author    : Dinesh Kumaran K
+; Description:
+;   - PORTB drives 8 LEDs.
+;   - If RC0 = 1 → LEDs shift from RB0 → RB7.
+;   - If RC0 = 0 → LEDs shift from RB7 → RB0.
+;   - Software delay used for visible LED movement.
+;===========================================================
+
+;------------------------------
+; General Purpose Registers
+;------------------------------
+X EQU 0x20
+Y EQU 0x21
+Z EQU 0x22
+V EQU 0x23     ; (unused)
+
+;------------------------------
+; Configuration Bits
+;------------------------------
+CONFIG  FOSC = HS
+CONFIG  WDTE = OFF
+CONFIG  PWRTE = OFF
+CONFIG  BOREN = OFF
+CONFIG  LVP = ON
+CONFIG  CPD = OFF
+CONFIG  WRT = OFF
+CONFIG  CP = OFF
+
+;===========================================================
+; RESET VECTOR
+;===========================================================
+psect RESET_VECT, class=CODE, delta=2
+RESET_VECT:
+    goto SETUP
+
+;===========================================================
+; INTERRUPT VECTOR (not used)
+;===========================================================
+psect INT_VECT, class=CODE, delta=2
+INT_VECT:
+    retfie
+
+;===========================================================
+; INITIALIZATION
+;===========================================================
+SETUP:
+    ; Select Bank 1
+    BCF STATUS, 6
+    BSF STATUS, 5
+
+    CLRF TRISB          ; PORTB as output (LEDs)
+    MOVLW 0xFF
+    MOVWF TRISA         ; PORTA as input
+
+    ; Return to Bank 0
+    BCF STATUS, 5
+
+    MOVLW 0x06
+    MOVWF ADCON1        ; Configure analog pins as digital
+
+    CLRF PORTB          ; Turn off all LEDs
+
+;===========================================================
+; MAIN LOOP
+;===========================================================
+MAIN:
+    CALL DELAY          ; Small delay
+
+    BTFSC PORTC,0       ; Check direction control bit (RC0)
+    GOTO LEFT_TO_RIGHT  ; If RC0 = 1 → forward chaser
+    GOTO RIGHT_TO_LEFT  ; If RC0 = 0 → reverse chaser
+
+;-----------------------------------------------------------
+; LED chaser: RB0 → RB7
+;-----------------------------------------------------------
+LEFT_TO_RIGHT:
+    CLRF PORTB
+    BSF PORTB,0
+    CALL DELAY
+    BSF PORTB,1
+    CALL DELAY
+    BSF PORTB,2
+    CALL DELAY
+    BSF PORTB,3
+    CALL DELAY
+    BSF PORTB,4
+    CALL DELAY
+    BSF PORTB,5
+    CALL DELAY
+    BSF PORTB,6
+    CALL DELAY
+    BSF PORTB,7
+    CALL DELAY
+    GOTO MAIN
+
+;-----------------------------------------------------------
+; LED chaser: RB7 → RB0
+;-----------------------------------------------------------
+RIGHT_TO_LEFT:
+    CLRF PORTB
+    BSF PORTB,7
+    CALL DELAY
+    BSF PORTB,6
+    CALL DELAY
+    BSF PORTB,5
+    CALL DELAY
+    BSF PORTB,4
+    CALL DELAY
+    BSF PORTB,3
+    CALL DELAY
+    BSF PORTB,2
+    CALL DELAY
+    BSF PORTB,1
+    CALL DELAY
+    BSF PORTB,0
+    CALL DELAY
+    GOTO MAIN
+
+;===========================================================
+; SOFTWARE DELAY ROUTINE
+;===========================================================
+DELAY:
+    MOVLW 0xFF
+    MOVWF X
+D1:
+    DECFSZ X,1
+    GOTO D2
+    RETURN
+D2:
+    MOVLW 0xFF
+    MOVWF Y
+D3:
+    DECFSZ Y,1
+    GOTO D4
+    GOTO D1
+D4:
+    MOVLW 0xFF
+    MOVWF Z
+D5:
+    DECFSZ Z,1
+    GOTO D3
+    GOTO D5

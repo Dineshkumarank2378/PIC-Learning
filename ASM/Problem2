@@ -1,0 +1,75 @@
+#include <xc.inc>
+
+;===========================================================
+; File      : porta_init.asm
+; MCU       : PIC16F877A
+; Purpose   : Configure PORTA as digital output and set initial value
+; Author    : Dinesh Kumaran K
+; Description:
+;   - Disables ADC functionality on PORTA pins.
+;   - Configures PORTA as output.
+;   - Sets lower 4 bits of PORTA to HIGH.
+;   - Runs an infinite loop.
+;===========================================================
+
+; =============================
+; CONFIGURATION BITS
+; =============================
+CONFIG  FOSC  = HS      ; High-speed oscillator
+CONFIG  WDTE  = OFF     ; Watchdog Timer disabled
+CONFIG  PWRTE = OFF     ; Power-up Timer disabled
+CONFIG  BOREN = OFF     ; Brown-out Reset disabled
+CONFIG  LVP   = OFF     ; Low-voltage programming disabled
+CONFIG  CPD   = OFF     ; Data EEPROM protection disabled
+CONFIG  WRT   = OFF     ; Flash write protection disabled
+CONFIG  CP    = OFF     ; Code protection disabled
+
+; =============================
+; RESET VECTOR
+; =============================
+psect RESET_VECT, class=CODE, delta=2
+RESET_VECT:
+    goto setup          ; Jump to initialization routine
+
+; =============================
+; INTERRUPT VECTOR (Not Used)
+; =============================
+psect INT_VECT, class=CODE, delta=2
+INT_VECT:
+    retfie              ; Return from interrupt
+
+; =============================
+; VARIABLE DEFINITIONS
+; =============================
+COUNT1  EQU  0x20       ; Reserved variable (unused)
+COUNT2  EQU  0x21       ; Reserved variable (unused)
+COUNT3  EQU  0x22       ; Reserved variable (unused)
+
+; =============================
+; INITIALIZATION ROUTINE
+; =============================
+setup:
+    ; Select Bank 1
+    BCF STATUS, 6
+    BSF STATUS, 5
+
+    MOVLW 0x06
+    MOVWF ADCON1        ; Configure PORTA pins as digital I/O
+
+    MOVLW 0x00
+    MOVWF TRISA         ; Set PORTA as output
+
+    ; Return to Bank 0
+    BCF STATUS, 6
+    BCF STATUS, 5
+
+    MOVLW 0x0F
+    MOVWF PORTA         ; Set RA0–RA3 HIGH, RA4–RA7 LOW
+
+; =============================
+; MAIN LOOP
+; =============================
+main:
+    GOTO main           ; Infinite loop (idle state)
+
+END

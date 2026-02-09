@@ -1,0 +1,128 @@
+;===========================================================
+; File      : gpio_bit_counter.asm
+; MCU       : PIC16F877A
+; Purpose   : Count number of HIGH bits in PORTB and control RC0
+; Author    : Dinesh Kumaran K
+; Description:
+;   - Reads PORTB input.
+;   - Counts how many bits are set (logic HIGH).
+;   - If number of HIGH bits >= 5, RC0 is set HIGH.
+;   - Otherwise, RC0 is cleared.
+;===========================================================
+
+#include <xc.inc>
+
+;------------------------------
+; General Purpose Registers
+;------------------------------
+X EQU 0x20        ; (unused - reserved for future use)
+Y EQU 0x21        ; (unused - reserved for future use)
+Z EQU 0x22        ; (unused - reserved for future use)
+V EQU 0x23        ; Stores PORTB value
+
+;------------------------------
+; Configuration Bits
+;------------------------------
+CONFIG  FOSC = HS     ; High-speed oscillator
+CONFIG  WDTE = OFF    ; Watchdog Timer disabled
+CONFIG  PWRTE = OFF   ; Power-up Timer disabled
+CONFIG  BOREN = OFF   ; Brown-out Reset disabled
+CONFIG  LVP = ON      ; Low-voltage programming enabled
+CONFIG  CPD = OFF     ; Data EEPROM protection disabled
+CONFIG  WRT = OFF     ; Flash write protection disabled
+CONFIG  CP = OFF      ; Code protection disabled
+
+;===========================================================
+; RESET VECTOR
+;===========================================================
+psect RESET_VECT, class=CODE, delta=2
+RESET_VECT:
+    goto SETUP        ; Jump to initialization routine
+
+;===========================================================
+; INTERRUPT VECTOR (not used)
+;===========================================================
+psect INT_VECT, class=CODE, delta=2
+INT_VECT:
+    retfie            ; Return from interrupt
+
+;===========================================================
+; INITIALIZATION (SETUP)
+;===========================================================
+SETUP:
+    ; Select Bank 1 to configure TRIS registers
+    BSF STATUS, 5
+    BCF STATUS, 6
+
+    MOVLW 0xFF
+    MOVWF TRISB       ; PORTB as input (all bits)
+
+    CLRF TRISC        ; PORTC as output (all bits)
+
+    ; Return to Bank 0
+    BCF STATUS, 5
+    BCF STATUS, 6
+
+    CLRF PORTC        ; Clear PORTC outputs
+
+;===========================================================
+; MAIN LOOP
+;===========================================================
+MAIN:
+    MOVF PORTB, W     ; Read PORTB
+    MOVWF V           ; Store value in register V
+
+    MOVLW 0x00        ; Clear W register (bit counter = 0)
+
+    ;--------------------------
+    ; Count number of HIGH bits
+    ;--------------------------
+    BTFSC V,0
+    ADDLW 0x01        ; If bit0 = 1, increment counter
+
+    BTFSC V,1
+    ADDLW 0x01        ; If bit1 = 1, increment counter
+
+    BTFSC V,2
+    ADDLW 0x01        ; If bit2 = 1, increment counter
+
+    BTFSC V,3
+    ADDLW 0x01        ; If bit3 = 1, increment counter
+
+    BTFSC V,4
+    ADDLW 0x01        ; If bit4 = 1, increment counter
+
+    BTFSC V,5
+    ADDLW 0x01        ; If bit5 = 1, increment counter
+
+    BTFSC V,6
+    ADDLW 0x01        ; If bit6 = 1, increment counter
+
+    BTFSC V,7
+    ADDLW 0x01        ; If bit7 = 1, increment counter
+
+    ;--------------------------
+    ; Compare count with 5
+    ;--------------------------
+    SUBLW 0x05        ; W = 5 - count
+
+    BTFSC STATUS,0    ; If Carry = 1 → count <= 5
+    GOTO LOOP1
+
+    BTFSC STATUS,2    ; If Zero = 1 → count == 5
+    GOTO LOOP1
+
+    ;--------------------------
+    ; If count < 5 → RC0 = 0
+    ;--------------------------
+    BCF PORTC,0       ; Clear RC0
+    GOTO MAIN
+
+;------------------------------
+; If count >= 5 → RC0 = 1
+;------------------------------
+LOOP1:
+    BSF PORTC,0       ; Set RC0
+    GOTO MAIN
+
+END

@@ -1,0 +1,108 @@
+#include <xc.inc>
+
+;===========================================================
+; File      : porta_blink.asm
+; MCU       : PIC16F877A
+; Purpose   : Blink all PORTA pins using software delay
+; Author    : Dinesh Kumaran K
+; Description:
+;   - Configures PORTA as digital output.
+;   - Turns all PORTA pins ON and OFF repeatedly.
+;   - Delay generated using three nested software counters.
+;===========================================================
+
+;------------------------------
+; Software Delay Counters
+;------------------------------
+COUNT   EQU 0x20
+COUNT2  EQU 0x21
+COUNT3  EQU 0x22
+
+;===========================================================
+; CONFIGURATION BITS
+;===========================================================
+CONFIG  FOSC  = HS
+CONFIG  WDTE  = OFF
+CONFIG  PWRTE = OFF
+CONFIG  BOREN = OFF
+CONFIG  LVP   = OFF
+CONFIG  CPD   = OFF
+CONFIG  WRT   = OFF
+CONFIG  CP    = OFF
+
+;===========================================================
+; RESET VECTOR
+;===========================================================
+psect RESET_VECT, class=CODE, delta=2
+RESET_VECT:
+    goto setup
+
+;===========================================================
+; INTERRUPT VECTOR (Not Used)
+;===========================================================
+psect INT_VECT, class=CODE, delta=2
+INT_VECT:
+    retfie
+
+;===========================================================
+; INITIALIZATION
+;===========================================================
+setup:
+    ; Select Bank 1
+    BCF STATUS, 6
+    BSF STATUS, 5
+
+    MOVLW 0x06
+    MOVWF ADCON1        ; Configure PORTA pins as digital I/O
+
+    MOVLW 0x00
+    MOVWF TRISA         ; PORTA as output
+
+    ; Return to Bank 0
+    BCF STATUS, 6
+    BCF STATUS, 5
+
+;===========================================================
+; MAIN LOOP
+;===========================================================
+main:
+    ; Turn ON all PORTA pins
+    MOVLW 0xFF
+    MOVWF PORTA
+    CALL DELAY
+
+    ; Turn OFF all PORTA pins
+    MOVLW 0x00
+    MOVWF PORTA
+    CALL DELAY
+
+    GOTO main           ; Repeat forever
+
+;===========================================================
+; SOFTWARE DELAY ROUTINE (3-level nested loop)
+;===========================================================
+DELAY:
+    MOVLW 0x0F
+    MOVWF COUNT
+
+D1:
+    MOVLW 0xFF
+    MOVWF COUNT2
+
+D2:
+    MOVLW 0xFF
+    MOVWF COUNT3
+
+D3:
+    DECFSZ COUNT3, 1
+    GOTO D3
+
+    DECFSZ COUNT2, 1
+    GOTO D2
+
+    DECFSZ COUNT, 1
+    GOTO D1
+
+    RETURN
+
+END

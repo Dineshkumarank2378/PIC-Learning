@@ -1,0 +1,72 @@
+; ============================================================
+; File: all_ports_high.asm
+; MCU : PIC16F877A
+; Description:
+;   This program configures all I/O ports (A–E) as digital outputs,
+;   disables analog functionality, and sets all port pins to logic HIGH.
+;   The initialization is executed repeatedly in an infinite loop.
+; ============================================================
+
+#include <xc.inc>
+
+; =============================
+; RAM Variable Definitions
+; =============================
+HI  EQU 0x20     ; Reserved variable (currently unused)
+HII EQU 0x21     ; Reserved variable (currently unused)
+
+; =============================
+; CONFIGURATION BITS
+; =============================
+CONFIG  FOSC = HS
+CONFIG  WDTE = OFF
+CONFIG  PWRTE = OFF
+CONFIG  BOREN = OFF
+CONFIG  LVP = ON
+CONFIG  CPD = OFF
+CONFIG  WRT = OFF
+CONFIG  CP = OFF
+
+; =============================
+; RESET VECTOR
+; =============================
+psect RESET_VECT, class=CODE, delta=2
+RESET_VECT:
+    goto SETUP
+
+; =============================
+; INTERRUPT VECTOR (NOT USED)
+; =============================
+psect INT_VECT, class=CODE, delta=2
+INT_VECT:
+    retfie
+
+; =============================
+; SYSTEM INITIALIZATION
+; =============================
+SETUP:
+    BCF STATUS,6        ; Select Bank 0
+    BSF STATUS,5        ; Select Bank 1
+
+    MOVLW 0x00
+    MOVWF TRISA         ; Configure PORTA as output
+    MOVWF TRISB         ; Configure PORTB as output
+    MOVWF TRISC         ; Configure PORTC as output
+    MOVWF TRISD         ; Configure PORTD as output
+    MOVWF TRISE         ; Configure PORTE as output
+
+    BCF STATUS,5        ; Back to Bank 0
+
+    MOVLW 0x06
+    MOVWF ADCON1        ; Configure all pins as digital I/O
+
+    MOVLW 0xFF
+    MOVWF PORTA         ; Set PORTA pins HIGH
+    MOVWF PORTB         ; Set PORTB pins HIGH
+    MOVWF PORTC         ; Set PORTC pins HIGH
+    MOVWF PORTD         ; Set PORTD pins HIGH
+    MOVWF PORTE         ; Set PORTE pins HIGH
+
+    GOTO SETUP          ; Infinite loop (reinitialization)
+
+    END

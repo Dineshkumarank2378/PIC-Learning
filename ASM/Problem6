@@ -1,0 +1,63 @@
+#include <xc.inc>
+
+;===========================================================
+; File      : button_led.asm
+; MCU       : PIC16F877A
+; Purpose   : Control LED using button on RA0
+; Author    : Dinesh Kumaran K
+;===========================================================
+
+COUNT  EQU 0x20
+
+CONFIG  FOSC  = HS
+CONFIG  WDTE  = OFF
+CONFIG  PWRTE = OFF
+CONFIG  BOREN = OFF
+CONFIG  LVP   = OFF
+CONFIG  CPD   = OFF
+CONFIG  WRT   = OFF
+CONFIG  CP    = OFF
+
+psect RESET_VECT, class=CODE, delta=2
+RESET_VECT:
+    goto setup
+
+psect INT_VECT, class=CODE, delta=2
+INT_VECT:
+    retfie
+
+;===========================================================
+; INITIALIZATION
+;===========================================================
+setup:
+    ; Bank 1
+    BSF STATUS,5
+    BCF STATUS,6
+
+    MOVLW 0x06
+    MOVWF ADCON1        ; PORTA digital
+
+    MOVLW 0x01
+    MOVWF TRISA         ; RA0 input, others output
+
+    CLRF TRISB          ; PORTB output
+
+    ; Bank 0
+    BCF STATUS,5
+
+;===========================================================
+; MAIN LOOP
+;===========================================================
+main:
+    BTFSC PORTA,0       ; Check RA0 button
+    GOTO led_on         ; If RA0 = 1 → LED ON
+
+led_off:
+    BCF PORTB,0         ; RB0 = 0
+    GOTO main
+
+led_on:
+    BSF PORTB,0         ; RB0 = 1
+    GOTO main
+
+END

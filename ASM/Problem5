@@ -1,0 +1,83 @@
+#include <xc.inc>
+
+;===========================================================
+; File      : ext_interrupt.asm
+; MCU       : PIC16F877A
+; Purpose   : External interrupt (INT0) to switch PORTB and PORTC outputs
+; Author    : Dinesh Kumaran K
+; Description:
+;   - PORTC ON normally.
+;   - On external interrupt at RB0, PORTB turns ON and PORTC turns OFF.
+;===========================================================
+
+;===========================================================
+; CONFIGURATION BITS
+;===========================================================
+CONFIG  FOSC  = HS
+CONFIG  WDTE  = OFF
+CONFIG  PWRTE = OFF
+CONFIG  BOREN = OFF
+CONFIG  LVP   = OFF
+CONFIG  CPD   = OFF
+CONFIG  WRT   = OFF
+CONFIG  CP    = OFF
+
+;===========================================================
+; RESET VECTOR
+;===========================================================
+psect RESET_VECT, class=CODE, delta=2
+RESET_VECT:
+    goto SETUP
+
+;===========================================================
+; INTERRUPT VECTOR
+;===========================================================
+psect INT_VECT, class=CODE, delta=2
+INT_VECT:
+    goto ISR
+
+;===========================================================
+; INITIALIZATION
+;===========================================================
+SETUP:
+    ; Select Bank 1
+    BSF STATUS,5
+    BCF STATUS,6
+
+    CLRF TRISB          ; PORTB as output
+    BSF TRISB,0         ; RB0 as input (INT0)
+
+    CLRF TRISC          ; PORTC as output
+
+    ; Configure external interrupt edge
+    BSF OPTION_REG,6    ; Interrupt on rising edge
+
+    ; Enable external interrupt and global interrupt
+    BSF INTCON,4        ; INTE = 1 (INT0 enable)
+    BSF INTCON,7        ; GIE = 1 (global interrupt enable)
+
+    ; Return to Bank 0
+    BCF STATUS,5
+
+;===========================================================
+; MAIN LOOP
+;===========================================================
+MAIN:
+    CLRF PORTB          ; PORTB OFF
+    MOVLW 0xFF
+    MOVWF PORTC         ; PORTC ON
+    goto MAIN
+
+;===========================================================
+; INTERRUPT SERVICE ROUTINE (ISR)
+;===========================================================
+ISR:
+    MOVLW 0xFF
+    MOVWF PORTB         ; PORTB ON
+    CLRF PORTC          ; PORTC OFF
+
+    BCF INTCON,1        ; Clear external interrupt flag (INTF)
+
+    RETFIE
+
+END
