@@ -33,8 +33,8 @@ void  setlow(volatile unsigned char * a,uint8_t bit);
 
 
 //configure the port
-void configure_portin(volatile unsigned char *port);
-void configure_portout(volatile unsigned char *port);
+void config_portin(volatile unsigned char *port);
+void config_portout(volatile unsigned char *port);
 
 // set value to port
 void setporthigh(volatile unsigned char *port);

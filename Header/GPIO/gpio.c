@@ -6,13 +6,13 @@
  * usage of PORTB PORTC PORTD IS ADVISABLE*/
   
 
-void  configure_out(volatile unsigned char * a,uint8_t bit)
+void  config_out(volatile unsigned char * a,uint8_t bit)
 {
     a=a+(0X80);
     *a&=~(1<<bit);
 }
 
-void  configure_in(volatile unsigned char * a,uint8_t bit)
+void  config_in(volatile unsigned char * a,uint8_t bit)
 {
     a=a+(0X80);
     *a|=1<<(bit);
@@ -32,15 +32,15 @@ void setporthigh(volatile unsigned char *port)
 {
     *port=0XFF;
 }
-void configure_portlow(volatile unsigned char *port)
+void setportlow(volatile unsigned char *port)
 {
     *port=0X00;
 }
-void configure_portin(volatile unsigned char *port)
+void config_portin(volatile unsigned char *port)
 {
     *(port+(0X80))=0XFF;
 }
-void setportout(volatile unsigned char *port)
+void config_portout(volatile unsigned char *port)
 {
     *(port+(0X80))=0X00;
 }
