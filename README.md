@@ -46,6 +46,4 @@ Please submit a pull request with clear descriptions of the changes.
 
 This is a study-oriented library and not intended to be a production-optimized driver. The emphasis is on readability, understanding, and learning embedded system fundamentals.
 
-## For More
 
-You can check out my PIC16F877A application programs in **my pic repo** and also I have documented my C learning — **check it out**.
