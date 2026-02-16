@@ -20,8 +20,8 @@ I am building an entire library from scratch.
 ### Completed
 
 * **GPIO header implementation**
-  * **(./Middleware/severnsegment/sevseg.h)Seven-segment**
-  * **(./Middleware/severnsegment/keypad.h)Keypad**
+  * **[Sevseg.h](./Middleware/severnsegment/sevseg.h)Seven-segment**
+  * **[Keypad.h](./Middleware/severnsegment/keypad.h)Keypad**
 
 ### Planned Modules
 
