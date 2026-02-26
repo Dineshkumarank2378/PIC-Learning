@@ -6,16 +6,16 @@
  * usage of PORTB PORTC PORTD IS ADVISABLE*/
   
 
-void  config_out(volatile unsigned char * a,uint8_t bit)
+void  config_pin(volatile unsigned char * a,uint8_t bit,uint8_t c)
 {
-    a=a+(0X80);
-    *a&=~(1<<bit);
-}
-
-void  config_in(volatile unsigned char * a,uint8_t bit)
-{
-    a=a+(0X80);
-    *a|=1<<(bit);
+    if(c==0)
+    { a=a+(0X80);
+    *a&=~(1<<bit);}
+    else if(c==1)
+    {
+         a=a+(0X80);
+         *a|=1<<(bit);
+    }
 }
 
 void sethigh(volatile unsigned char *a,uint8_t bit)
@@ -36,13 +36,17 @@ void setportlow(volatile unsigned char *port)
 {
     *port=0X00;
 }
-void config_portin(volatile unsigned char *port)
+
+void config_port(volatile unsigned char *port,uint8_t c)
 {
-    *(port+(0X80))=0XFF;
-}
-void config_portout(volatile unsigned char *port)
-{
-    *(port+(0X80))=0X00;
+    if(c==0)
+    {
+        *(port+(0X80))=0X00;
+    }
+    else if(c==1)
+    {
+         *(port+(0X80))=0XFF;
+    } 
 }
 
 void setvalue(volatile unsigned char * a,uint8_t value)
@@ -59,23 +63,25 @@ void ledchaser(volatile unsigned char* a)
 {
     for( unsigned char i=0;i<8;i++)
     {*a=(char)(1<<i);
-    delay(1000);}
+//    delay(1000);
+}
 }
 
 void ledblink(volatile unsigned char* a)
 {
     *a=~(*a);
-    delay(10);
+  //  delay(10);
     *a=~(*a);
-    delay(10);
+  //  delay(10);
     
 }
 
-void delay (int a)
-{
-    while(a!=0)
-    {
-        for(uint16_t i=0;i<1000;i++);
-        a--;
-    }
-}
+
+//void delay (int a)
+//{
+//    while(a!=0)
+//    {
+//        for(uint16_t i=0;i<10;i++);
+//        a--;
+//    }
+//}

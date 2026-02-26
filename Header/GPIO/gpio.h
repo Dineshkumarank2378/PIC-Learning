@@ -24,8 +24,7 @@
 
 
 // configure the pin 
-void  config_out(volatile unsigned char * a,uint8_t bit);
-void  config_in(volatile unsigned char * a,uint8_t bit);
+void  config_pin(volatile unsigned char * a,uint8_t bit,uint8_t c);
 
 //set value to pin
 void  sethigh(volatile unsigned char * a,uint8_t bit);
@@ -33,8 +32,7 @@ void  setlow(volatile unsigned char * a,uint8_t bit);
 
 
 //configure the port
-void config_portin(volatile unsigned char *port);
-void config_portout(volatile unsigned char *port);
+void config_port(volatile unsigned char *port,uint8_t c);
 
 // set value to port
 void setporthigh(volatile unsigned char *port);
@@ -49,6 +47,6 @@ void setvalue(volatile unsigned char * a,uint8_t value);
 void ledchaser(volatile unsigned char* a);// Run led chaser on specified port
 void ledblink(volatile unsigned char* a);// blink the  specified port
 void toggleport(volatile unsigned char *port);// toggle the specified port
-void delay (int a);// delay for given second
+//void delay (int a);// delay for given second
 
 #endif
