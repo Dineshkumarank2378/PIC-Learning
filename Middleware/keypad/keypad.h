@@ -1,5 +1,5 @@
-#include"gpio.h"
-#include"sevseg.h"
+#include "D:\Learning Doc\PIC Learning\Header\GPIO\gpio.h"
+#include"D:\Learning Doc\PIC Learning\Middleware\sevensegment\sevseg.h"
 
 //1st 4 bits of the port are output remaining are input
 
