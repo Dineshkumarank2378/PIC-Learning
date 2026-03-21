@@ -11,7 +11,7 @@ void counter_sevseg(volatile unsigned char *a)
     for(volatile char i=0;i<10;i++)
     {
         *a=sevseg(i);
-         delay(1000);
+        delay_ms(100);
         
     }
 }
@@ -28,12 +28,12 @@ void counter_2sevseg(volatile unsigned char *port,volatile unsigned char *eport,
             sethigh(eport,b);
             *port=sevseg(i);
             setlow(eport,a);
-           delay(1);
+         delay_ms(1);
             sethigh(eport,a);
             sethigh(eport,b);
             *port=sevseg(j);
              setlow(eport,b);
-             delay(1);
+             delay_ms(1);
             }
             
             
@@ -51,11 +51,11 @@ void display_2sevseg(volatile unsigned char *port,volatile unsigned char *eport,
         sethigh(eport,b);
         *port=sevseg(ones);
         setlow(eport,b);
-        delay(1);
+        delay_ms(1);
          sethigh(eport,a);
         sethigh(eport,b);
         *port=sevseg(tens);
         setlow(eport,a);
-        delay(1);     
+        delay_ms(1);     
     }
 }

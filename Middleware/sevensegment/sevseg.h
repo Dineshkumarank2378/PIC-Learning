@@ -1,4 +1,5 @@
 #include "D:\Learning Doc\PIC Learning\Header\GPIO\gpio.h"
+#include"D:\Learning Doc\PIC Learning\Header\Timer\timer.h"
 
 #ifndef sevseg_H
 #define sevseg_H
